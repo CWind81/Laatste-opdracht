@@ -6,7 +6,7 @@ export const Navigation = () => {
     <nav>
       <ul>
         <li>
-          <Link to="/">Events</Link>
+          <Link to="/events">Events</Link>
         </li>
         <li>
           <Link to="/event/1">Event</Link>

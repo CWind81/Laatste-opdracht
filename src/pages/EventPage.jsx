@@ -153,7 +153,7 @@ const EventPage = () => {
           isClosable: true,
         });
 
-        navigate("/");
+        navigate("/events");
       } catch (error) {
         console.error(error);
         toast({

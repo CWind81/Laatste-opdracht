@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLoaderData } from "react-router-dom";
 import AddEventForm2 from "./AddEventForm2";
 import {
   Flex,
@@ -13,45 +13,31 @@ import {
   SimpleGrid,
 } from "@chakra-ui/react";
 
+export const loader = async () => {
+  const eventsResponse = await fetch("http://localhost:3000/events");
+  const usersResponse = await fetch("http://localhost:3000/users");
+  const categoriesResponse = await fetch("http://localhost:3000/categories");
+
+  if (!eventsResponse.ok || !usersResponse.ok || !categoriesResponse.ok) {
+    throw new Error("Failed to load events");
+  }
+
+  const eventsData = await eventsResponse.json();
+  const usersData = await usersResponse.json();
+  const categoriesData = await categoriesResponse.json();
+
+  return { events: eventsData, users: usersData, categories: categoriesData };
+};
+
 const EventsPage = () => {
-  const [events, setEvents] = useState([]);
-  const [filteredEvents, setFilteredEvents] = useState([]);
+  const { events, users, categories } = useLoaderData();
+  const [filteredEvents, setFilteredEvents] = useState(events);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
-  const [users, setUsers] = useState([]);
-  const [categories, setCategories] = useState([]);
 
   useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const eventsResponse = await fetch("http://localhost:3000/events");
-        const usersResponse = await fetch("http://localhost:3000/users");
-        const categoriesResponse = await fetch(
-          "http://localhost:3000/categories"
-        );
-        if (!eventsResponse.ok || !usersResponse.ok || !categoriesResponse.ok) {
-          throw new Error("Failed to load events");
-        }
-
-        const eventsData = await eventsResponse.json();
-        const usersData = await usersResponse.json();
-        const categoriesData = await categoriesResponse.json();
-
-        setEvents(eventsData);
-        setFilteredEvents(eventsData);
-        setUsers(usersData);
-        setCategories(categoriesData);
-      } catch (error) {
-        console.error(error);
-        console.log("Failed to find event.");
-      }
-    };
-
-    fetchEvents();
-
-    const intervalId = setInterval(fetchEvents, 10000);
-    return () => clearInterval(intervalId);
-  }, []);
+    setFilteredEvents(events);
+  }, [events]);
 
   useEffect(() => {
     handleFilter();
@@ -94,8 +80,18 @@ const EventsPage = () => {
     }
   };
 
-  const handleAddEvent = (eventData) => {
-    console.log("Event added:", eventData);
+  const handleAddEvent = async (eventData) => {
+    try {
+      console.log("Event added:", eventData);
+      const eventsResponse = await fetch("http://localhost:3000/events");
+      if (!eventsResponse.ok) {
+        throw new Error("Failed to fetch events");
+      }
+      const updatedEventsData = await eventsResponse.json();
+      setFilteredEvents(updatedEventsData);
+    } catch (error) {
+      console.error("Error adding event:", error);
+    }
   };
 
   const handleSelectEvent = (selectedEvent) => {

@@ -218,7 +218,7 @@ const EventPage = () => {
         bg="purple.100"
         mb={4}
       >
-        <Button onClick={handleGoBack} bgColor="red.300">
+        <Button onClick={handleGoBack} bgColor="red.300" ml={10}>
           Go Back
         </Button>
         <Heading ml={10}>{event.title}</Heading>

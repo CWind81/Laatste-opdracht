@@ -9,7 +9,10 @@ export const Navigation = () => {
         flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "green",
+        backgroundImage:
+          "url('https://w.wallhaven.cc/full/0j/wallhaven-0jdzgy.jpg')",
+        backgroundSize: "cover",
+        backgroundRepeat: "no-repeat",
       }}
     >
       <div

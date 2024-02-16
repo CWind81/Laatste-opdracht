@@ -209,14 +209,14 @@ const EventPage = () => {
   };
 
   return (
-    <Flex justifyContent="center" bgColor="green.200" maxH="110vh">
+    <Flex justifyContent="center" maxH="110vh" bgColor="green.200">
       <Box
         maxW="5xl"
         borderWidth="1px"
         minH="100vh"
         borderRadius="md"
-        bg="purple.100"
         mb={4}
+        bgColor={"purple.200"}
       >
         <Button onClick={handleGoBack} bgColor="red.300" ml={10}>
           Go Back

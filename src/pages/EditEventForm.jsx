@@ -10,15 +10,22 @@ import {
   Flex,
 } from "@chakra-ui/react";
 
-const EditEventForm = ({ event, onSave }) => {
+const EditEventForm = ({
+  event,
+  onSave,
+  onClose,
+  categoryIds: initialCategoryIds,
+  categories,
+}) => {
   const [startTime, setStartTime] = useState(event.startTime);
   const [endTime, setEndTime] = useState(event.endTime);
   const [selectedUser, setSelectedUser] = useState(event.createdBy);
-  const [category, setCategory] = useState(event.category);
   const [description, setDescription] = useState(event.description);
   const [location, setLocation] = useState(event.location);
-  const [imageUrl, setImageUrl] = useState(event.imageUrl);
+  const [image, setImage] = useState(event.image);
   const [users, setUsers] = useState([]);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [categoryIds, setCategoryIds] = useState(initialCategoryIds);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -28,13 +35,18 @@ const EditEventForm = ({ event, onSave }) => {
           throw new Error("Failed to fetch users");
         }
         const data = await response.json();
+        console.log("Users:", data);
         setUsers(data);
       } catch (error) {
         console.error(error);
       }
     };
     fetchUsers();
-  }, []);
+  }, [refreshKey]);
+
+  useEffect(() => {
+    setSelectedUser(event.createdBy);
+  }, [event.createdBy]);
 
   const handleSave = async () => {
     try {
@@ -43,20 +55,26 @@ const EditEventForm = ({ event, onSave }) => {
         startTime,
         endTime,
         createdBy: parseInt(selectedUser),
-        category,
+        categoryIds: Array.isArray(categoryIds)
+          ? categoryIds.map((id) => parseInt(id))
+          : [parseInt(categoryIds)],
         description,
         location,
-        imageUrl,
+        image,
       };
 
-      onSave(editedEvent);
+      await onSave(editedEvent);
+
+      setSelectedUser(null);
+
+      setRefreshKey((prevKey) => prevKey + 1);
     } catch (error) {
       console.error("Error updating event:", error);
     }
   };
 
   return (
-    <Modal isOpen={true} onClose={() => null}>
+    <Modal isOpen={true} onClose={() => null} key={refreshKey}>
       <ModalOverlay />
       <ModalContent>
         <Flex
@@ -73,7 +91,7 @@ const EditEventForm = ({ event, onSave }) => {
           justifyContent="center"
         >
           <ModalHeader>Edit Event</ModalHeader>
-          <ModalCloseButton />
+          <ModalCloseButton onClick={onClose} />
           <ModalBody>
             <Flex flexDir="column" style={{ width: "100%" }} pb={5}>
               <label style={{ width: "100%", marginBottom: "10px" }}>
@@ -109,13 +127,22 @@ const EditEventForm = ({ event, onSave }) => {
               <label style={{ width: "100%", marginBottom: "10px" }}>
                 Category:
                 <select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
+                  multiple
+                  value={categoryIds}
+                  onChange={(e) => {
+                    const selectedOptions = Array.from(
+                      e.target.selectedOptions,
+                      (option) => option.value
+                    );
+                    setCategoryIds(selectedOptions);
+                  }}
                 >
                   <option value="">Select category</option>
-                  <option value="sports">Sports</option>
-                  <option value="games">Games</option>
-                  <option value="relaxation">Relaxation</option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
                 </select>
               </label>
               <label style={{ width: "100%", marginBottom: "10px" }}>
@@ -143,8 +170,8 @@ const EditEventForm = ({ event, onSave }) => {
                 Image Url:
                 <input
                   type="text"
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
+                  value={image}
+                  onChange={(e) => setImage(e.target.value)}
                 />
               </label>
             </Flex>

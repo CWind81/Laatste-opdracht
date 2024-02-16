@@ -70,6 +70,19 @@ const EventPage = () => {
       setEvent(updatedEvent);
       setIsEditing(false);
       setOpenModal(false);
+
+      if (updatedEvent.createdBy !== event.createdBy) {
+        const userResponse = await fetch(
+          `http://localhost:3000/users/${updatedEvent.createdBy}`
+        );
+        if (userResponse.ok) {
+          const userData = await userResponse.json();
+          setCreatedByUser(userData);
+        } else {
+          setCreatedByUser(null);
+        }
+      }
+
       toast({
         title: "Event updated successfully",
         status: "success",
@@ -187,6 +200,14 @@ const EventPage = () => {
     return formattedDateTime;
   };
 
+  const handleCloseEdit = () => {
+    setIsEditing(false);
+  };
+
+  const handleGoBack = () => {
+    navigate(-1);
+  };
+
   return (
     <Flex justifyContent="center" bgColor="green.200" maxH="110vh">
       <Box
@@ -197,10 +218,14 @@ const EventPage = () => {
         bg="purple.100"
         mb={4}
       >
+        <Button onClick={handleGoBack} bgColor="red.300">
+          Go Back
+        </Button>
         <Heading ml={10}>{event.title}</Heading>
         <Image src={event.image} alt={event.title} />
         <Text ml={10}>{event.description}</Text>
         <Box ml={10}>
+          <p>Location: {event.location}</p>
           <p>Start Time: {formatStartTime(event.startTime)}</p>
           <p>End Time: {formatStartTime(event.endTime)}</p>
           <p>
@@ -218,7 +243,13 @@ const EventPage = () => {
         </Box>
         <Box ml={10} mt={5}>
           {isEditing ? (
-            <EditEventForm event={event} onSave={handleSaveEdit} />
+            <EditEventForm
+              event={event}
+              onSave={handleSaveEdit}
+              categoryIds={event.categoryIds}
+              categories={categories}
+              onClose={handleCloseEdit}
+            />
           ) : (
             <div>
               <Button onClick={handleEdit}>Edit</Button>
